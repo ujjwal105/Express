@@ -1,2 +1,2 @@
 # Express
-Some Basic things about Backend using Express
+Some Basics about Backend using Express
