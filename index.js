@@ -14,6 +14,8 @@ const user = [{
 
 app.use(express.json());
 
+// To get data from Server
+
 app.get("/", function (req, res) {
     const johnkidneys = user[0].kidneys
     numOfKidneys = johnkidneys.length
@@ -32,6 +34,8 @@ app.get("/", function (req, res) {
     })
 })
 
+// To post Data
+
 app.post("/", function (req, res) {
     const isHealthy = req.body.isHealthy
     user[0].kidneys.push({
@@ -44,6 +48,8 @@ app.post("/", function (req, res) {
 
 
 })
+
+//To Update data
 
 app.put("/", function (req, res) {
     if (isthereatLeastOneUnhealthyKidney()) {
@@ -62,6 +68,9 @@ app.put("/", function (req, res) {
         })
     }
 })
+
+//For removal of data
+
 app.delete("/", function (req, res) {
 
     if (isthereatLeastOneUnhealthyKidney()) {
