@@ -1,0 +1,162 @@
+const express = require("express")
+
+const app = express();
+
+// ugly way without Middlewares
+
+
+app.get("/",function(req,res){
+
+const kidneyID = req.query.kidneyID;
+const username = req.headers.username;
+const password = req.headers.password;
+
+if(username!="Ujjwal" && password!="pass123"){
+    res.status(403).json({
+        msg:"User Doesn't exist"
+    })
+    return;
+}
+
+
+if(kidneyID != 1 && kidneyID != 2){
+    res.status(411).json({
+        msg:"Invalid inputs"
+    })
+    return;
+}
+
+res.send("Your heart is doing well")
+})
+
+
+/*Ques - what if we have to introduce new route for kidney replacement 
+        inputs need to be same
+ Ans - Slightly better way is to create a function outside and wrap with the pre-checks 
+       and call for every route
+*/
+
+
+function MiddlewaresUser(req,res,next){
+  const username = req.headers.username;
+  const password = req.headers.password;
+    if(username!="Ujjwal" && password!="pass123"){
+        res.status(403).json({
+            msg:"User Doesn't exist"
+        })
+
+    }
+    else{
+        next();
+    }
+}
+function MiddlewaresKidneyInput(req,res,next){
+  const kidneyID = req.query.kidneyID;
+    if(kidneyID != 1 && kidneyID != 2){
+        res.status(411).json({
+            msg:"Invalid inputs"
+        })
+    }
+    else{
+        next();
+    }
+}
+
+// If any of the middlewares are not fulfilled then the next middleware is not called
+ 
+
+app.get("/Kidney-check",MiddlewaresKidneyInput,MiddlewaresUser,function(req,res){
+    res.send("Kidney is good")
+})
+
+app.get("/Heart-check",MiddlewaresUser,function(req,res){
+    res.send("Heart is good")
+})
+
+
+// Input validation
+
+
+app.use(express.json())
+
+app.post("/health-checkups",function(req,res){
+  
+  const kidney = req.body.kidney;
+  const kidneylength = kidney.length;
+
+  res.send("The length of kidney is "+kidneylength)
+})
+
+
+//  Global Catches
+
+app.use(function(err,req,res,next){
+  
+    res.status(500).json({
+        msg:"Internal Server Error"
+    })
+  
+}) 
+
+
+//  ZOD
+
+
+const zod = require("zod")
+
+//  Define stucture of our input 
+
+const schema = zod.array(zod.number())
+
+app.post("/health-checkups",function(req,res){
+
+  const kidney = req.body.kidney;
+  const response = schema.safeParse(kidney)
+
+  if(!response.success){
+    res.send({
+      msg:"Invalid Input"
+    })
+  }
+  else{
+  res.send({
+    response
+  })
+  }
+  
+})
+
+// let make a Email password validate function
+
+function validateEmail(obj){
+  const schema  = zod.object({
+    email:zod.string().email()
+    ,
+    password:zod.string().min(8)
+  })
+  const response = schema.safeParse(obj)
+  console.log(response)
+}
+
+// By ourself
+
+validateEmail({
+  email : "ujjwaltyagi@gmail.com"
+  ,
+  password : "ujjwal12"
+})
+
+// HTTP-fi it
+
+app.post("/",function(req,res){
+  const response  = validateEmail(req.body)
+
+  if(!response.success){
+    res.status(400).json({
+      msg:"Invalid Input"
+    })
+    return;
+  }
+})
+
+app.listen(3000)
